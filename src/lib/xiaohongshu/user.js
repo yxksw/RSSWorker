@@ -3,8 +3,8 @@ import { renderRss2 } from '../../utils/util';
 let getUser = async (url) => {
 	let res = await fetch(url, {
 		headers: {
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-		}
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+		},
 	});
 	let scripts = [];
 	let rewriter = new HTMLRewriter()
@@ -19,6 +19,9 @@ let getUser = async (url) => {
 		.transform(res);
 	await rewriter.text();
 	let script = scripts.find((script) => script.startsWith('window.__INITIAL_STATE__='));
+	if (!script) {
+		throw new Error('无法获取用户数据：页面结构已更改或未找到 window.__INITIAL_STATE__');
+	}
 	script = script.slice('window.__INITIAL_STATE__='.length);
 	// replace undefined to null
 	script = script.replace(/undefined/g, 'null');
@@ -33,27 +36,38 @@ let deal = async (ctx) => {
 	const category = 'notes';
 	const url = `https://www.xiaohongshu.com/user/profile/${uid}`;
 
+	const userData = await getUser(url);
+
+	if (!userData || !userData.userPageData) {
+		throw new Error('无法获取用户页面数据，可能需要登录或页面结构已更改');
+	}
+
 	const {
 		userPageData: { basicInfo, interactions, tags },
 		notes,
 		collect,
-	} = await getUser(url);
+	} = userData;
 
 	const title = `${basicInfo.nickname} - ${category === 'notes' ? '笔记' : '收藏'} • 小红书 / RED`;
 	const description = `${basicInfo.desc} ${tags.map((t) => t.name).join(' ')} ${interactions.map((i) => `${i.count} ${i.name}`).join(' ')}`;
 	const image = basicInfo.imageb || basicInfo.images;
 
-	const renderNote = (notes) =>
-		notes.flatMap((n) =>
-			n.map(({ noteCard }) => ({
-				title: noteCard.displayTitle,
+	const renderNote = (notes) => {
+		if (!notes || !Array.isArray(notes) || notes.length === 0) {
+			return [];
+		}
+		return notes.flatMap((n) => {
+			if (!Array.isArray(n)) return [];
+			return n.map(({ noteCard }) => ({
+				title: noteCard.displayTitle || '无标题',
 				link: `${url}/${noteCard.noteId}`,
-				guid: noteCard.displayTitle,
-				description: `<img src ="${noteCard.cover.infoList.pop().url}"><br>${noteCard.displayTitle}`,
-				author: noteCard.user.nickname,
-				upvotes: noteCard.interactInfo.likedCount,
-			}))
-		);
+				guid: noteCard.displayTitle || noteCard.noteId,
+				description: `<img src ="${noteCard.cover?.infoList?.pop()?.url || ''}"><br>${noteCard.displayTitle || ''}`,
+				author: noteCard.user?.nickname || '未知用户',
+				upvotes: noteCard.interactInfo?.likedCount || 0,
+			}));
+		});
+	};
 	const renderCollect = (collect) => {
 		if (!collect) {
 			throw Error('该用户已设置收藏内容不可见');
@@ -73,7 +87,7 @@ let deal = async (ctx) => {
 		}));
 	};
 
-    ctx.header('Content-Type', 'application/xml');
+	ctx.header('Content-Type', 'application/xml');
 	return ctx.text(
 		renderRss2({
 			title,
@@ -81,7 +95,7 @@ let deal = async (ctx) => {
 			image,
 			link: url,
 			items: category === 'notes' ? renderNote(notes) : renderCollect(collect),
-		})
+		}),
 	);
 };
 
