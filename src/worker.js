@@ -10,6 +10,8 @@ import route from './route';
 
 const app = new Hono();
 
+app.use('/*', cors());
+
 app.route('/rss', route);
 app.get('/', (ctx) => {
 	return ctx.html(indexHtml);
@@ -37,6 +39,5 @@ app.onError((err, c) => {
 // 		password: 'password',
 // 	})
 // );
-app.use('/*', cors());
 
 export default app;
