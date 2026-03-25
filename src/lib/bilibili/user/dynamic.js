@@ -38,25 +38,25 @@ let getPubDate = (ptimeLabelText) => {
 let getItemFromDynamicForward = (card) => {
 	// title
 	let title = '';
-	for (let desc of card.extend.desc) {
+	for (let desc of card.extend?.desc || []) {
 		title += desc.text;
 	}
 	// link
-	let link = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let link = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	// description
 	let description = title + '<br/>';
-	description += `转发自：@${card.extend.origName}<br/>`;
-	for (let desc of card.extend.origDesc) {
+	description += `转发自：@${card.extend?.origName}<br/>`;
+	for (let desc of card.extend?.origDesc || []) {
 		description += desc.text;
 	}
 	if (card.extend.origImgUrl) {
 		description += `<br/><img src="${card.extend.origImgUrl}"/>`;
 	}
 	let pubDate = new Date().toUTCString();
-	let guid = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let guid = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	let author = '';
 	let category = card.cardType;
-	for (let _module of card.modules) {
+	for (let _module of card.modules || []) {
 		if (_module.moduleType === 'module_author') {
 			let ptimeLabelText = _module.moduleAuthor?.ptimeLabelText;
 			pubDate = getPubDate(ptimeLabelText);
@@ -77,21 +77,21 @@ let getItemFromDynamicForward = (card) => {
 let getItemFromDynamicAv = (card) => {
 	// title
 	let title = '';
-	for (let desc of card.extend.origDesc) {
+	for (let desc of card.extend?.origDesc || []) {
 		title += desc.text;
 	}
 	// link
-	let link = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let link = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	// description
 	let description = title + '<br/>';
 	if (card.extend.origImgUrl) {
 		description += `<img src="${card.extend.origImgUrl}"/>`;
 	}
 	let pubDate = new Date().toUTCString();
-	let guid = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let guid = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	let author = '';
 	let category = card.cardType;
-	for (let _module of card.modules) {
+	for (let _module of card.modules || []) {
 		if (_module.moduleType === 'module_author') {
 			let ptimeLabelText = _module.moduleAuthor?.ptimeLabelText;
 			pubDate = getPubDate(ptimeLabelText);
@@ -114,22 +114,22 @@ let getItemFromDynamicAv = (card) => {
 let getItemFromDynamicDraw = (card) => {
 	// title
 	let title = '';
-	for (let desc of card.extend.origDesc) {
+	for (let desc of card.extend?.origDesc || []) {
 		title += desc.text;
 	}
 	// link
-	let link = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let link = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	// description
 	let description = title + '<br/>';
-	for (let cover of card.extend?.opusSummary?.covers) {
+	for (let cover of card.extend?.opusSummary?.covers || []) {
 		description += `<img src="${cover.src}"/><br/>`;
 	}
 
 	let pubDate = new Date().toUTCString();
-	let guid = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let guid = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	let author = '';
 	let category = card.cardType;
-	for (let _module of card.modules) {
+	for (let _module of card.modules || []) {
 		if (_module.moduleType === 'module_author') {
 			let ptimeLabelText = _module.moduleAuthor?.ptimeLabelText;
 			pubDate = getPubDate(ptimeLabelText);
@@ -151,13 +151,13 @@ let getItemFromDynamicDraw = (card) => {
 
 let getItemFromDynamicDefault = (card) => {
 	let title = '';
-	let link = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let link = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	let description = '';
 	let pubDate = new Date().toUTCString();
-	let guid = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	let guid = `https://t.bilibili.com/${card.extend?.dynIdStr}`;
 	let author = '';
 	let category = card.cardType;
-	for (let _module of card.modules) {
+	for (let _module of card.modules || []) {
 		if (_module.moduleType === 'module_desc') {
 			title = _module.moduleDesc?.text;
 			// description = _module?.moduleDesc?.desc.text;
@@ -168,7 +168,7 @@ let getItemFromDynamicDefault = (card) => {
 		}
 	}
 	if (title === '') {
-		for (let desc of card.extend?.origDesc) {
+		for (let desc of card.extend?.origDesc || []) {
 			title += desc.text;
 		}
 	}
@@ -187,7 +187,7 @@ let getItemFromPaidDynamic = (card) => {
 	let pubDate = new Date().toUTCString();
 	let author = '';
 	let category = card.cardType;
-	for (let _module of card.modules) {
+	for (let _module of card.modules || []) {
 		if (_module.moduleType === 'module_author') {
 			let ptimeLabelText = _module.moduleAuthor?.ptimeLabelText;
 			pubDate = getPubDate(ptimeLabelText);
@@ -196,17 +196,17 @@ let getItemFromPaidDynamic = (card) => {
 	}
 	return {
 		title: '充电专属动态',
-		link: `https://t.bilibili.com/${card.extend.dynIdStr}`,
+		link: `https://t.bilibili.com/${card.extend?.dynIdStr}`,
 		description: '充电专属动态',
 		pubDate: pubDate,
-		guid: `https://t.bilibili.com/${card.extend.dynIdStr}`,
+		guid: `https://t.bilibili.com/${card.extend?.dynIdStr}`,
 		author: author,
 		category: category,
 	};
 };
 
 let getItemFromDynamic = (card) => {
-	if (card.extend.onlyFansProperty.isOnlyFans) {
+	if (card.extend?.onlyFansProperty?.isOnlyFans) {
 		return getItemFromPaidDynamic(card);
 	}
 	switch (card.cardType) {
@@ -231,12 +231,12 @@ let deal = async (ctx) => {
 	let dynSpaceRes = JSON.parse(dynSpaceResJson);
 	let items = [];
 	let globalUsername = '';
-	if (dynSpaceRes.list.length !== 0) {
-		globalUsername = dynSpaceRes.list[0].extend.origName;
+	if (dynSpaceRes.list && dynSpaceRes.list.length !== 0) {
+		globalUsername = dynSpaceRes.list[0].extend?.origName || uid;
 	} else {
 		globalUsername = uid;
 	}
-	for (let card of dynSpaceRes.list) {
+	for (let card of dynSpaceRes.list || []) {
 		let item = getItemFromDynamic(card);
 		items.push(item);
 	}
